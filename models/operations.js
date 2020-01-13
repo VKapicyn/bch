@@ -1,6 +1,6 @@
 const testData = require('../testData.js');
 const weights = require('../alphabet').weights;
-const Utils = require('./Utils');
+const Utils = require('./utils');
 
 exports.callStack = async (stack, vars) => {
     let onNext = stack;
