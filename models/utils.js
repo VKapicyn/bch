@@ -134,3 +134,35 @@ exports.clean = (text) => {
  
     return result;
  }
+
+ exports.isNumber = (text) => {
+    if (text.length <= 6) {
+        items = text.split('');
+        let dot = 0;
+        for (let i=0; i<items.length; i++) {
+            if (dot > 1)
+                return false;
+            if (
+                (+items[i] == 0) || 
+                (+items[i] == 1) ||
+                (+items[i] == 2) ||
+                (+items[i] == 3) ||
+                (+items[i] == 4) ||
+                (+items[i] == 5) ||
+                (+items[i] == 6) ||
+                (+items[i] == 7) ||
+                (+items[i] == 8) ||
+                (+items[i] == 9) ||
+                (items[i] == '.' && i>0)
+            ) {
+                if (items[i] == '.' && i>0)
+                    ++dot;
+            } else {
+                return false;
+            }
+        }
+    }
+    else false;
+
+    return true
+ }

@@ -6,6 +6,15 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 
+app.use(
+    function(req, res, next) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+        res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type, Authorization');
+        next();
+    }
+)
+
 //worked
 exports.createContract = async (req, res) => {
     //TODO: убедиться что не более 6 контрактов на раунд
@@ -13,7 +22,9 @@ exports.createContract = async (req, res) => {
     let sk = {};
     try {
         sk = await contr.validateAndSave();
-        res.json({sk:sk._id})
+        console.log(sk)
+        console.log('отправил!')
+        res.json(sk)
     } catch (e) {
         //sk.err = e.toString();
         res.json({err: e.toString()})
@@ -49,6 +60,7 @@ exports.callField = async (req, res) => {
     try{
         console.log(`${req.body.user},${req.body.data}`)
         await field.callToWrite(req.body.user, req.body.data);
+        console.log('done'+JSON.stringify(field))
         console.log('done'+field)
         res.json({field});
     } catch(e) {
@@ -83,7 +95,17 @@ exports.getResults = async (req, res) => {
 
 //worked
 exports.getAllContracts = async (req, res) => {
-    res.json(await dbModel.find({},'contracts'));
+    console.log(req.params.id)
+    if (req.params.id == 'all')
+        res.json(await dbModel.find({},'contracts'));
+    else {
+        let sc = await dbModel.findOne({'_id':req.params.id},'contracts');
+        for (let i=0; i<sc.fields.length; i++) {
+            sc.fields[i] = (await dbModel.findOne({_id: sc.fields[i]}, 'fields'))
+        }
+        sc.results = await SC.getResult(sc);
+        res.json(sc);
+    }    
 }
 
 //worked
@@ -141,7 +163,7 @@ router.post('/sk/create', exports.createContract);
 router.post('/sk/close', exports.closeAllByRound);
 router.post('/callField', exports.callField);
 router.get('/sk/actual/:round', exports.getAllActualContracts);
-router.get('/sk/all', exports.getAllContracts);
+router.get('/sk/:id', exports.getAllContracts);
 router.get('/sk/results/:id', exports.getResults);
 router.get('/fields/:skID', exports.getFields);
 router.get('/sk/code/:id', exports.getContractCode);

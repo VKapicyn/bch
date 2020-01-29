@@ -9,21 +9,29 @@ var tokenizer = new TokenizeThis();
 // '^УСЛ((1+8)>(2+4)?(7+1):(9+3))';
 //let str = `(((2-1)+(1+2))*3)`
 //let str = `^УСЛ(0>1?^УСЛ(3<4?5|6)|^УСЛ(0==1?9|10))`;
-let str = `^УСЛ(_время1>_ВРЕМЯ?^УСЛ(0>2?(^ВЕС(_слово1)*1.5)|1)|(^ВЕС(_слово2)*2))`
+//let str = `^УСЛ(0@@_тест1?5|10)`
+//let str = `^УСЛ(_время1>_ВРЕМЯ?^УСЛ(0>2?(^ВЕС(_слово1)*1.5)|1)|(^ВЕС(_слово2)*2))`
 //'(^УСЛ(((1+8)>2)?(7+1),11)-(((2*((3+4)-(1+2)))-_получилПродукт)+(^ВЕС(_чай,1)/^ВЕС(_чай,3))))';
 
-//let str = testData.resultTest;
+//let str = testData.resultTest2;
 // ((2+3)*^УСЛ(1>(2+4)?7:(9+3)));
-var _tokens = [];
+/*var _tokens = [];
 tokenizer.tokenize(str, function(token) {
     _tokens.push(token);
-});
+});*/
 
 //console.log(_tokens)
 enrichedTokens = [];
 AST = {};
+let viszovi;
 
 function makeAST(tokens, AST) {
+    ++viszovi;
+    //console.log(viszovi, tokens, JSON.stringify(AST))
+    if (viszovi > 2000)
+        throw new Error('Контракт ЗАЦИКЛИВАЕТСЯ или привышен допустимый ЛИМИТ вычислений. Проверьте корректность расположения символов "(" и ")"<br>')
+    if (!tokens)
+        throw new Error('Некорректное использование встроенных методов')
     for(i=0; i<tokens.length; i++) {
         if (tokens[i] === '^' && tokens[i+1] === 'УСЛ' && tokens[i+2] === '(') {
             let result = findCond(tokens);
@@ -53,6 +61,7 @@ function makeAST(tokens, AST) {
             i = result.end;
         } else if (tokens[i] === '(' && isFirstMethodMathOrLogic(tokens, false).on) {
             // логика
+            console.log('раскладываю логику'+tokens)
             let result = isFirstMethodMathOrLogic(tokens);
             AST.type = 'cond';
             AST.method = tokens[result.method];
@@ -181,13 +190,14 @@ function isField(token) {
 }
 
 function isLogicMethod(token) {
-    if (token === '||' || token === '&&' || token === '>' || token === '>=' || token === '<' || token === '<=' || token == '==' || token == '!=')
+    if (token === '@@' || token === '||' || token === '&&' || token === '>' || token === '>=' || token === '<' || token === '<=' || token == '==' || token == '!=')
         return true;
     else
         return false;
 }
 
 exports.getAST = (text) => {
+    viszovi = 0;
     let _tokens = [];
     tokenizer.tokenize(text, function(token) {
         _tokens.push(token);
@@ -208,5 +218,12 @@ exports.getFields = (text) => {
     })
     return fields;
 }
-//console.log(JSON.stringify(makeAST(_tokens, {})));
-//console.log(require('./operations').callStack(makeAST(_tokens, {})));
+/*viszovi = 0;
+console.log(_tokens)
+console.log(JSON.stringify(makeAST(_tokens, {})));
+(async()=>console.log(
+    await require('./operations').callStack(
+            makeAST(_tokens, {}), 
+            {'_тест1':0, '_себестоимостьСлов':null, '_получилПродукт':15}
+        )
+    ))()*/

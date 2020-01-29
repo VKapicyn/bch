@@ -27,9 +27,15 @@ class Result {
             await this.validateUser(user.join(''));
 
             methodsText = (text.slice(startMethods+1, text.length)).join('');
-            this.getStackTrace(methodsText);
+            try {
+                methodsText = operations.prepeareUno(methodsText);
+                await this.getStackTrace(methodsText);
+                //console.log(this.stackTrace)
+            } catch(e) {
+                throw new Error(`<p>Некорректное поле с результатами: </br>\n${methodsText} </br>\n${e.toString()}</p>`);
+            }
         } else
-            throw new Error('Некорректное поле с результатами');
+            throw new Error(`<p>Некорректное поле с результатами: </br>\n${text} </br>\n'Не найден знак ":" </p>`);
 
         return await this.updateDB();
     }
@@ -53,8 +59,21 @@ class Result {
     }
 
     async getStackTrace(text) {
-        this.stackTrace = tokenModel.getAST(text);
+        let ST;
+        console.log('собираюсь ПОЛУЧИТЬ СТ')
+        try {
+            ST = tokenModel.getAST(text);
+        } catch (e) {
+            console.log('дошел до ошибки')
+            console.log(e)
+            throw e
+        }
+
+        console.log('ПОЛУЧИЛ СТ')
+        this.stackTrace = ST
+        console.log('сохранил СТ')
         this.fields = tokenModel.getFields(text);
+        console.log('получил поля')
     }
 
     async callResult() {
@@ -65,19 +84,16 @@ class Result {
             //console.log(this.fields[i])
             let _field = await Field.getFieldByName(this.skID, this.fields[i]);
             //console.log(_field._id, this.skID, this.fields[i])
-            obj[_field.name] = (_field.type=='$время'||_field.type=='$число') ? +_field.value : _field.value;
+            obj[_field.name] = (_field.type=='$время'||_field.type=='$число') ? (_field.value==null?null:+_field.value) : _field.value;
             if (_field.value || _field.value === 0)
                 ++count;  
         }
-
-        //проверяем, что есть все используемые поля
-        if (count == this.fields.length && user)
             return {
                 user, 
                 balance: await operations.callStack(this.stackTrace, obj)
             };
-        else
-            return {user: null, balance: null};
+        //else
+        //    return {user: null, balance: null};
     }
 
     async updateDB() {

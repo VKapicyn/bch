@@ -11,6 +11,7 @@ exports.save = async (obj, collectionName) => {
 
     if (!client) { return } 
 
+    console.log('сохраняю...')
     try {
         let was = await (new Promise((resp, rejp)=>{
             //if (collectionName == 'contracts') 

@@ -7,6 +7,7 @@ exports.callStack = async (stack, vars) => {
     let result;
     let a, b;
 
+    //console.log(onNext)
     switch (onNext.type) {
         case 'cond' : 
             a = await exports._pre(onNext.args[0], vars),
@@ -56,7 +57,7 @@ exports.callStack = async (stack, vars) => {
 //logic
 exports.condition = function(assertion, a, b) {
     let response;
-    console.log(`${JSON.stringify(a)} ${assertion} ${JSON.stringify(b)}`);
+    //console.log(`${JSON.stringify(a)} ${assertion} ${JSON.stringify(b)}`);
     switch(assertion) {
         case '>' :
             if (a > b) response = 'onTrue';else response = 'onFalse';
@@ -82,6 +83,9 @@ exports.condition = function(assertion, a, b) {
         case '&&' :
             if (a && b) response = 'onTrue'; else response = 'onFalse';
         break;
+        case '@@' :
+            if (b||b===0) response = 'onTrue'; else response = 'onFalse';
+        break;
     }
     return response;
 }
@@ -100,7 +104,7 @@ exports._pre = async (prepeared, vars) => {
             obj = exports.callStack(prepeared, vars);
         break;
         case 'number': 
-            obj = Number(prepeared.value);
+            obj = prepeared.value == null? null : Number(prepeared.value);
         case 'logic': 
             obj = prepeared.value;
         break;
@@ -119,33 +123,44 @@ exports.getWeight = async (text, item) => {
     } else
         sum = weights[array[Number(item-1)]];
 
-    console.log(`${text} весит: ${sum}`);
+    //console.log(`${text} весит: ${sum}`);
     return sum;
 }
 exports.getLength = (text) => {
-    return text.length;
+    
+    return text ? text.length : 0;
 }
 exports.sum = (...args) => {
-    console.log(`${args[0]} + ${args[1]}`);
+    //console.log(`${args[0]} + ${args[1]}`);
     return Number(args[0]) + Number(args[1]);
 }
 exports.subtraction = (...args) => {
-    console.log(`${JSON.stringify(args[0])} - ${JSON.stringify(args[1])}`);
+    //console.log(`${JSON.stringify(args[0])} - ${JSON.stringify(args[1])}`);
     return Number(args[0]) - Number(args[1]);
 }
 exports.division = (...args) => {
-    console.log(`${args[0]} / ${args[1]}`);
+    //console.log(`${args[0]} / ${args[1]}`);
     return Math.round((Number(args[0]) / Number(args[1]))*100)/100;
 }
 exports.multiplication = (...args) => {
-    console.log(`${args[0]} * ${args[1]}`);
+    //console.log(`${args[0]} * ${args[1]}`);
     return Math.round(Number(args[0]) * Number(args[1]));
 }
 exports.getField = async (name, vars) => {
+
     if (name === '_ВРЕМЯ') {
         return (await Utils.getRoundEnd());
     } else
     return vars[name];
 }
 
+exports.prepeareUno = (text) => {
+    let items = text.match(/@@/g)?text.match(/@@/g).length:0;
+    while(items!=0){
+        //console.log('процесс '+items)
+        --items;
+        text = text.replace('@@','0@@');
+    }
+    return text;
+}
 //console.log(`ПОЛУЧИЛОСЬ: ${JSON.stringify(exports.callStack(testData.stackTrace))}`);

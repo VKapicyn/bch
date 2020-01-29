@@ -118,7 +118,7 @@ class Field {
                 else
                     ++err;
 
-                if (this.type === '$число' && isNumber(value)) 
+                if (this.type === '$число' && Utils.isNumber(value)) 
                     this.value = value;
                 else
                     ++err;

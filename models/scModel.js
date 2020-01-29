@@ -39,16 +39,17 @@ class SmartContract{
             
             for (let i=0; i<cleanText.resArray.length; i++) {
                let _result = new Result(this._id);
-               let newRes = await _result.validateAndSave(cleanText.resArray[i]);
-               this.results.push(_result._id);
+               let savedRes = await _result.validateAndSave(cleanText.resArray[i]);
+               this.results.push(savedRes);
             }
 
             this.status = 1;
             await this.updateDB();
+            return this._id
          } catch(e) {
             //удалить
             //по _id
-            console.log(e)
+            console.log('scModel: '+e.toString())
             throw e;
          }
       }
@@ -60,7 +61,6 @@ class SmartContract{
       //find sc
       let results = [];
       for (let i=0; i<sc.results.length; i++) {
-         console.log(sc.results[i])
          try {
             sc.results[i] = await dbModel.findOne(sc.results[i], 'results');
 
@@ -75,6 +75,7 @@ class SmartContract{
             results.push(await result.callResult());
          }
          catch(e) {
+            console.log('кажется ошибка тут')
             console.log(e)
             continue;
          }
