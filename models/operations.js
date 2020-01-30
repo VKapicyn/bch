@@ -114,7 +114,7 @@ exports._pre = async (prepeared, vars) => {
 
 exports.getWeight = async (text, item) => {
     let sum = 0,
-        array = text.toLowerCase().split('');
+        array = text ? text.toLowerCase().split('') : [];
 
     if (!item) {
         array.map(x => {
