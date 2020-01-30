@@ -16,6 +16,9 @@ exports.lics = async () => {
 };
 
 exports.compare = async (author, lic) => {
+    console.log('АХТУНГ')
+    console.log(author, lic)
+    console.log('2222')
     let _comp = await request(`${config.api}lic/has`, {
         method: 'POST', 
         data: {
@@ -23,6 +26,8 @@ exports.compare = async (author, lic) => {
             login: author
         }
       })
+    console.log(_comp)
+    console.log('ЭНД')
     return JSON.parse(_comp.body);
 }
 
