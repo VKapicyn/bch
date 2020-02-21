@@ -34,6 +34,10 @@ exports.createContract = async (req, res) => {
 //worked
 exports.getContractCode = async (req, res) => {
     let sc = await dbModel.findOne({_id: req.params.id},'contracts');
+    if (!sc) {
+        res.json({text:'Некорректный id контракта'});
+        return;
+    }
     res.json(
         (sc).text
     );
@@ -72,6 +76,10 @@ exports.callField = async (req, res) => {
 //worked
 exports.getFields = async (req, res) => {
     let fieldIds = (await dbModel.findOne({_id: req.params.skID}, 'contracts')).fields;
+    if (!fieldIds) {
+        res.json([]);
+        return;
+    }
     let fields = [];
 
     for (let i=0; i<fieldIds.length; i++) {
@@ -87,6 +95,10 @@ exports.getFields = async (req, res) => {
 //worked
 exports.getResults = async (req, res) => {
     let ctr = await dbModel.findOne({_id: req.params.id}, 'contracts');
+    if (!ctr) {
+        res.json({});
+        return;
+    }
     let ctrObject = new SC(ctr._id, ctr.text, ctr.author, ctr.status, ctr.resBalance, ctr.fields, ctr.vars, ctr.results, ctr.round);
     res.json({
         result: await SC.getResult(ctrObject)
@@ -100,6 +112,11 @@ exports.getAllContracts = async (req, res) => {
         res.json(await dbModel.find({},'contracts'));
     else {
         let sc = await dbModel.findOne({'_id':req.params.id},'contracts');
+        if (!sc) {
+            res.json([]);
+            return;
+        }
+
         for (let i=0; i<sc.fields.length; i++) {
             sc.fields[i] = (await dbModel.findOne({_id: sc.fields[i]}, 'fields'))
         }
@@ -115,6 +132,10 @@ exports.getAllActualContracts = async (req, res) => {
 
 async function allActualContracts(round) {
     let scs = await dbModel.find({round:Number(round), status: 1},'contracts');
+
+    if (!scs) {
+        return [];
+    }
 
     for (let j=0; j<scs.length; j++) {
         for (let i=0; i<scs[j].fields.length; i++) {

@@ -76,10 +76,14 @@ exports.findOne = async (params, collectionName) => {
     const db = client.db(dbName);
     const collection = db.collection(collectionName);
     if (params['_id']) {
-        params['_id'] = ObjectId(params['_id']);
+        try {
+            params['_id'] = ObjectId(params['_id']);
+        } catch(e) { return null}
     }
     if (params['skID']) {
-        params['skID'] = ObjectId(params['skID']);
+        try {
+            params['skID'] = ObjectId(params['skID']);
+        } catch(e) { return null}
     }
 
     if (!client) { return } 
